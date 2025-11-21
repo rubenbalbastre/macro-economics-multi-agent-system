@@ -35,7 +35,7 @@ class LLMCall:
         model = init_chat_model(model="gpt-4o-mini", temperature=0)
         self.llm_with_tools = model.bind_tools(tools)
 
-    def __call__(self, state):
+    async def __call__(self, state):
         """Analyze current state and decide on next actions.
         
         The model analyzes the current conversation state and decides whether to:
@@ -46,7 +46,7 @@ class LLMCall:
         """
         return {
             "messages": [
-                self.llm_with_tools.invoke(
+                await self.llm_with_tools.ainvoke(
                     [SystemMessage(content=research_agent_prompt)] + state["messages"]
                 )
             ]
@@ -56,7 +56,7 @@ class SummarizeResearch:
     def __init__(self, llm_config):
         self.llm = init_chat_model(model="gpt-4o-mini", temperature=0)
 
-    def __call__(self, state):
+    async def __call__(self, state):
         """Compress research findings into a concise summary.
         
         Takes all the research messages and tool outputs and creates
@@ -65,7 +65,7 @@ class SummarizeResearch:
         
         system_message = compress_research_system_prompt.format(date=get_today_str())
         messages = [SystemMessage(content=system_message)] + state.get("messages", []) + [HumanMessage(content=compress_research_human_message)]
-        response = self.llm.invoke(messages)
+        response = await self.llm.ainvoke(messages)
         
         # Extract raw notes from tool and AI messages
         raw_notes = [
@@ -86,7 +86,7 @@ class ToolNode:
         self.tools_by_name = {tool.name: tool for tool in tools}
 
 
-    def __call__(self, state: ResearcherState):
+    async def __call__(self, state: ResearcherState):
         """Execute all tool calls from the previous LLM response.
         
         Executes all tool calls from the previous LLM responses.
@@ -98,7 +98,9 @@ class ToolNode:
         observations = []
         for tool_call in tool_calls:
             tool = self.tools_by_name[tool_call["name"]]
-            observations.append(tool.invoke(tool_call["args"]))
+            observations.append(
+                await tool.ainvoke(tool_call["args"])
+            )
                 
         # Create tool message outputs
         tool_outputs = [
@@ -128,7 +130,7 @@ def route_research(state: ResearcherState) -> Literal["tool_node", "summarize_re
     return path
 
 class Research:
-    def __init__(self, llm_config, compile_config):
+    def __init__(self, llm_config, compile_config = {}):
         self.llm_config = llm_config
         self.graph = None
         self.compiled_graph = None
@@ -156,5 +158,5 @@ class Research:
     def _compile_graph(self, compile_config):
         self.compiled_graph = self.graph.compile(**compile_config)
     
-    def invoke(self, input, config):
-        return self.compiled_graph.invoke(input, config=config)
+    async def ainvoke(self, input, config):
+        return await self.compiled_graph.ainvoke(input, config=config)
