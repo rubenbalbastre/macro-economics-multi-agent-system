@@ -44,7 +44,6 @@ Under the directory `/examples/` there are placed some basic scripts to demonstr
 
 ## Elements
 
-* Geopolitical Agent
-* Macro-Economics Agent
 * Monetary Agent
+* Labour Market Agent
 * Deep Research Agent
