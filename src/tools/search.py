@@ -5,6 +5,14 @@ from tools.others import get_today_str
 
 from pydantic import Field, BaseModel
 
+from tavily import TavilyClient
+from prompts import summarize_webpage_prompt
+from langchain_core.messages import HumanMessage
+from langchain.chat_models import init_chat_model
+
+tavily_client = TavilyClient()
+summarization_model = init_chat_model(model="gpt-4o-mini", max_tokens=16384) # TODO: to be in config in yaml using wrapping classes around node and graphs
+
 
 class Summary(BaseModel):
     """Schema for webpage content summarization."""
