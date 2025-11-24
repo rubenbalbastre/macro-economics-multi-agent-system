@@ -53,6 +53,9 @@ Under the directory `/examples/` there are placed some basic scripts to demonstr
 
 This repository contains a set of principales which can be summarized here:
 
+![](/docs/images/multi-agent-system.png)
+
+
 #### Multi-Agent systems in LangGraph
 
 The framework used to develop this project was LangGraph due to the flexibility it offers and my familiarity with it. However, there is no specific reason that might block anyone to implement it using another framework.
