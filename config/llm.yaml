@@ -12,4 +12,8 @@
   "research_brief":
     "model_name": "gpt-4o-mini"
     "temperature": 0
+"supervisor":
+  "supervisor_agent":
+    "model_name": "gpt-4o-mini"
+    "temperature": 0
 

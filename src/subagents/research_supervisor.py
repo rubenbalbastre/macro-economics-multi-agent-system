@@ -278,7 +278,7 @@ class Supervisor:
 
         graph = StateGraph(SupervisorState)
 
-        graph.add_node("supervisor", LLMCall(llm_config=self.llm_config.get("llm_call"), tools=tools))
+        graph.add_node("supervisor", LLMCall(llm_config=self.llm_config.get("supervisor").get("supervisor_agent"), tools=tools))
         graph.add_node("tool_node", ToolNode(tools=tools, research_tool=research_tool))
 
         graph.add_edge(START, "supervisor")
