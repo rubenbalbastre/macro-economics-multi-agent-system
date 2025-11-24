@@ -32,7 +32,11 @@ class ResearchTopicAnalysis(BaseModel):
 class TopicClarifier:
 
     def __init__(self, llm_config):
-        model = init_chat_model(model="gpt-4o-mini", temperature=0)
+        self._llm_config = llm_config
+        model = init_chat_model(
+            model=self._llm_config.get("model_name"), 
+            temperature=self._llm_config.get("temperature")
+        )
         self.llm = model.with_structured_output(ResearchTopicAnalysis)
 
     def __call__(self, state):
@@ -52,7 +56,11 @@ class TopicClarifier:
 class ResearchBrief:
 
     def __init__(self, llm_config):
-        model = init_chat_model(model="gpt-4o-mini", temperature=0)
+        self._llm_config = llm_config
+        model = init_chat_model(
+            model=self._llm_config.get("model_name"), 
+            temperature=self._llm_config.get("temperature")
+        )
         self.llm = model.with_structured_output(ResearchQuestion)
 
     def __call__(self, state):
