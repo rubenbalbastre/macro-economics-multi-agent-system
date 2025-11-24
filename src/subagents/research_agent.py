@@ -32,7 +32,11 @@ class ResearchSummary(BaseModel):
 
 class LLMCall:
     def __init__(self, llm_config, tools):
-        model = init_chat_model(model="gpt-4o-mini", temperature=0)
+        self._llm_config = llm_config
+        model = init_chat_model(
+            model=self._llm_config.get("model_name"), 
+            temperature=self._llm_config.get("temperature")
+        )
         self.llm_with_tools = model.bind_tools(tools)
 
     async def __call__(self, state):
@@ -54,7 +58,12 @@ class LLMCall:
 
 class SummarizeResearch:
     def __init__(self, llm_config):
-        self.llm = init_chat_model(model="gpt-4o-mini", temperature=0)
+        self._llm_config = llm_config
+        model = init_chat_model(
+            model=self._llm_config.get("model_name"), 
+            temperature=self._llm_config.get("temperature")
+        )
+        self.llm = model
 
     async def __call__(self, state):
         """Compress research findings into a concise summary.
@@ -144,7 +153,7 @@ class Research:
 
         graph = StateGraph(ResearcherState)
 
-        graph.add_node("llm_call", LLMCall(llm_config=self.llm_config.get("llm_call"), tools=tools))
+        graph.add_node("llm_call", LLMCall(llm_config=self.llm_config.get("research_agent"), tools=tools))
         graph.add_node("tool_node", ToolNode(tools=tools))
         graph.add_node("summarize_research", SummarizeResearch(llm_config=self.llm_config.get("summarize_research")))
 
