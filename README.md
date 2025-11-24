@@ -2,14 +2,14 @@
 
 ## 🧭 Purpose
 
-This repo contains a multi agent system based on LLMs. It incorporates techniques such as RAG and function calling. The agent flow is designed using LangGraph and LangChain.
+A macro economic multi agent LLM based system. It contains a deep research system combined with a persistent memory tracking system. When asked about a certain topic, it initiates a topic to track. It does a first research to save its current state. Then, when triggered (it could be done periodically) it runs another research to update its past state.
 
-It is inspired on the [Deep Research](https://github.com/langchain-ai/open_deep_research) and [Deep Agents](https://github.com/langchain-ai/deepagents) projects of LangChain and the [AlphaAgents paper](https://arxiv.org/abs/2508.11152).
+This architecture is motivated due to the requirement of knowing past trends and events to be able to answer properly in macro-economic topics. However, this might apply to many different topics.
 
-The objetive is to be able to analyze the macro-economic context at a given time.
+It is mainly inspired by the [Deep Research](https://github.com/langchain-ai/open_deep_research) and [Deep Agents](https://github.com/langchain-ai/deepagents) projects of LangChain and the [AlphaAgents paper](https://arxiv.org/abs/2508.11152).
 
 
-# Status ![Development](https://img.shields.io/badge/⚒️-In_Development-blue)
+## Status ![Development](https://img.shields.io/badge/⚒️-In_Development-blue)
 
 In progress...
 
@@ -26,6 +26,7 @@ Then, create a `.env` file in the root directory to configure your API keys:
 
 ```bash
 OPENAI_API_KEY="YOUR_API_KEY"
+TAVILY_API_KEY="TAVILY_API_KEY"
 HUGGINGFACE_TOKEN="YOUR_HUGGINGFACE_TOKEN"
 ```
 
@@ -34,13 +35,42 @@ Once configured, open and run the notebook `app.ipynb`
 
 ---
 
+
+## 🛠️ Examples
+
+Under the directory `/examples/` there are placed some basic scripts to demonstrate the action of each agent individually. You can find:
+
+* Research System Examples:
+  * Scope System
+  * Research Agent
+  * Research Supervisor Agent + Research Agents
+* 
+
+
 ## 🧠 Technical Overview
 
 ### Introduction
 
-Methodology -> workflows implemented thorugh classes wrappers to facility configuration of LLM parameters such as temperature. LLMs configuration is made using a yaml file like this:
+This repository contains a set of principales which can be summarized here:
+
+#### Multi-Agent systems in LangGraph
+
+The framework used to develop this project was LangGraph due to the flexibility it offers and my familiarity with it. However, there is no specific reason that might block anyone to implement it using another framework.
+
+#### Workflows/Agents as Objects
+ 
+To facilitate configuration of different agents and tools, a yaml config file is provided. To work on top of that, a object oriented style is followed to implement Workflows and Agent. Classes are created to hold logics and instances are specific LLM configurations of those classes.
+
+LLMs configuration is defined in a yaml file similar to this. It contains the model name and the temperature. Note that this could extend to other parameters but it was not required to the purpose of this repo.
 
 ```yaml
+"research":
+  "research_agent":
+    "model_name": "gpt-4o-mini"
+    "temperature": 0
+  "summarize_research":
+    "model_name": "gpt-4o-mini"
+    "temperature": 0
 "scope":
   "topic_clarification":
     "model_name": "gpt-4o-mini"
@@ -48,20 +78,24 @@ Methodology -> workflows implemented thorugh classes wrappers to facility config
   "research_brief":
     "model_name": "gpt-4o-mini"
     "temperature": 0
-
+"supervisor":
+  "supervisor_agent":
+    "model_name": "gpt-4o-mini"
+    "temperature": 0
 ```
 
-### examples
+### System Components
 
-Under the directory `/examples/` there are placed some basic scripts to demonstrate the action of each agent individually. Note that this are not tests which intend to cover all the casuistics in an agent behaviour.
+#### Deep Research Agent
 
-## 🛠️ Configuration Example
+A system to perform web searches in a loop to be able to find information about a certain topic.
 
-## Elements
+#### Tracking Agent
 
-* Monetary Agent
-* Labour Market Agent
-* Deep Research Agent
+
+
+#### Monetary Agent
+#### Labour Market Agent
 
 
 ## References:
