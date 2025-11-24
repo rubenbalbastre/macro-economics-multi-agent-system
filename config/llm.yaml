@@ -2,7 +2,7 @@
   "research_agent":
     "model_name": "gpt-4o-mini"
     "temperature": 0
-  "summarization_research":
+  "summarize_research":
     "model_name": "gpt-4o-mini"
     "temperature": 0
 "scope":
