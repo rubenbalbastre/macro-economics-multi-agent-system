@@ -39,8 +39,8 @@ class TopicClarifier:
         )
         self.llm = model.with_structured_output(ResearchTopicAnalysis)
 
-    def __call__(self, state):
-        response = self.llm.invoke(
+    async def __call__(self, state):
+        response = await self.llm.ainvoke(
             input=[
                 HumanMessage(content=clarify_with_user_instructions.format(
                     messages=get_buffer_string(state.get("messages")),
@@ -63,8 +63,8 @@ class ResearchBrief:
         )
         self.llm = model.with_structured_output(ResearchQuestion)
 
-    def __call__(self, state):
-        response = self.llm.invoke([
+    async def __call__(self, state):
+        response = await self.llm.ainvoke([
         HumanMessage(
             content=transform_messages_into_research_topic_prompt.format(
                 messages=get_buffer_string(state.get("messages", [])),
@@ -105,5 +105,5 @@ class DefineResearchTopic:
     def _compile_graph(self, compile_config):
         self.compiled_graph = self.graph.compile(**compile_config)
     
-    def invoke(self, input, config):
-        return self.compiled_graph.invoke(input, config=config)
+    async def ainvoke(self, input, config):
+        return await self.compiled_graph.ainvoke(input, config=config)
