@@ -12,13 +12,14 @@ from prompts import clarify_with_user_instructions, transform_messages_into_rese
 from tools.others import get_today_str
 
 # graph state
-class ResearchAgentState(MessagesState):
+class ScopeSystemState(MessagesState):
     is_topic_clarified: bool
 
 
 # structured output schemas
 class ResearchQuestion(BaseModel):
     title: str
+
 
 class ResearchTopicAnalysis(BaseModel):
     is_topic_clarified: bool = Field(
@@ -28,7 +29,7 @@ class ResearchTopicAnalysis(BaseModel):
         description="A question to ask the user to clarify the topic research."
     )
 
-# graph flow
+
 class TopicClarifier:
 
     def __init__(self, llm_config):
@@ -52,6 +53,7 @@ class TopicClarifier:
         is_topic_clarified = response.is_topic_clarified
 
         return {"messages": [ai_message], "is_topic_clarified": is_topic_clarified}
+
 
 class ResearchBrief:
 
@@ -81,7 +83,8 @@ def check_clarity(state):
     direction = "write_research_brief" if state.get("is_topic_clarified") else END
     return direction
 
-class DefineResearchTopic:
+
+class ScopeSystem:
     def __init__(self, llm_config, compile_config):
         self.llm_config = llm_config
         self.graph = None
@@ -92,7 +95,7 @@ class DefineResearchTopic:
 
     def _build_graph(self):
 
-        graph = StateGraph(ResearchAgentState)
+        graph = StateGraph(ScopeSystemState)
         graph.add_node("analyze_research_topic", TopicClarifier(llm_config=self.llm_config.get("topic_clarification")))
         graph.add_node("write_research_brief", ResearchBrief(llm_config=self.llm_config.get("research_brief")))
 

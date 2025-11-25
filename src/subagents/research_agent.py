@@ -16,7 +16,7 @@ from tools.think import think_tool
 
 
 # graph state
-class ResearcherState(MessagesState):
+class ResearchAgentState(MessagesState):
     number_of_tool_calls: int
     research_topic: str
     research_summary: str
@@ -28,8 +28,6 @@ class ResearchSummary(BaseModel):
     summary: str = Field(description="Concise sumary of the webpage content")
 
 
-# ===== CONFIGURATION =====
-
 class LLMCall:
     def __init__(self, llm_config, tools):
         self._llm_config = llm_config
@@ -39,7 +37,7 @@ class LLMCall:
         )
         self.llm_with_tools = model.bind_tools(tools)
 
-    async def __call__(self, state):
+    async def __call__(self, state: ResearchAgentState):
         """Analyze current state and decide on next actions.
         
         The model analyzes the current conversation state and decides whether to:
@@ -56,6 +54,7 @@ class LLMCall:
             ]
         }
 
+
 class SummarizeResearch:
     def __init__(self, llm_config):
         self._llm_config = llm_config
@@ -65,7 +64,7 @@ class SummarizeResearch:
         )
         self.llm = model
 
-    async def __call__(self, state):
+    async def __call__(self, state: ResearchAgentState):
         """Compress research findings into a concise summary.
         
         Takes all the research messages and tool outputs and creates
@@ -89,13 +88,14 @@ class SummarizeResearch:
             "raw_notes": ["\n".join(raw_notes)]
         }
 
+
 class ToolNode:
     def __init__(self, tools):
         # Set up tools
         self.tools_by_name = {tool.name: tool for tool in tools}
 
 
-    async def __call__(self, state: ResearcherState):
+    async def __call__(self, state: ResearchAgentState):
         """Execute all tool calls from the previous LLM response.
         
         Executes all tool calls from the previous LLM responses.
@@ -123,7 +123,7 @@ class ToolNode:
         return {"messages": tool_outputs}
 
 
-def route_research(state: ResearcherState) -> Literal["tool_node", "summarize_research"]:
+def route_research(state: ResearchAgentState) -> Literal["tool_node", "summarize_research"]:
 
     messages = state["messages"]
     last_message = messages[-1]
@@ -138,7 +138,8 @@ def route_research(state: ResearcherState) -> Literal["tool_node", "summarize_re
     
     return path
 
-class Research:
+
+class ResearchAgent:
     def __init__(self, llm_config, compile_config = {}):
         self.llm_config = llm_config
         self.graph = None
@@ -151,7 +152,7 @@ class Research:
 
         tools = [think_tool, tavily_search]
 
-        graph = StateGraph(ResearcherState)
+        graph = StateGraph(ResearchAgentState)
 
         graph.add_node("llm_call", LLMCall(llm_config=self.llm_config.get("research_agent"), tools=tools))
         graph.add_node("tool_node", ToolNode(tools=tools))

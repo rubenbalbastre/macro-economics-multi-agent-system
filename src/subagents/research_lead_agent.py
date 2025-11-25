@@ -28,7 +28,7 @@ from typing_extensions import Annotated
 from langchain_core.messages import BaseMessage
 
 
-class SupervisorState(MessagesState):
+class ResearchLeadAgentState(MessagesState):
     """
     State for the multi-agent research supervisor.
     
@@ -63,6 +63,7 @@ def get_notes_from_tool_calls(messages: list[BaseMessage]) -> list[str]:
     """
     return [tool_msg.content for tool_msg in filter_messages(messages, include_types="tool")]
 
+
 # Ensure async compatibility for Jupyter environments
 try:
     import nest_asyncio
@@ -76,7 +77,6 @@ try:
 except ImportError:
     pass  # nest_asyncio not available, proceed without it
 
-# ===== SUPERVISOR NODES =====
 
 class LLMCall:
     def __init__(self, llm_config, tools):
@@ -89,7 +89,7 @@ class LLMCall:
         # This prevents infinite loops and controls research depth per topic
         self.max_researcher_iterations = 6 # Calls to think_tool + ConductResearch
 
-    async def __call__(self, state: SupervisorState) -> Command[Literal["tool_node"]]:
+    async def __call__(self, state: ResearchLeadAgentState) -> Command[Literal["tool_node"]]:
         """Coordinate research activities.
         
         Analyzes the research brief and current progress to decide:
@@ -136,7 +136,7 @@ class ToolNode:
         # This prevents infinite loops and controls research depth per topic
         self.max_researcher_iterations = 6 # Calls to think_tool + ConductResearch
 
-    async def __call__(self, state: SupervisorState) -> Command[Literal["supervisor", END]]:
+    async def __call__(self, state: ResearchLeadAgentState) -> Command[Literal["supervisor", END]]:
         """Execute supervisor decisions - either conduct research or end the process.
         
         Handles:
@@ -257,7 +257,8 @@ class ToolNode:
                 }
             )
 
-class Supervisor:
+
+class ResearchLeadAgent:
     def __init__(self, llm_config, compile_config):
 
         self.llm_config = llm_config
@@ -271,12 +272,12 @@ class Supervisor:
 
         tools = [ConductResearch, ResearchComplete, think_tool]
         
-        from subagents.research_agent import Research
-        research_tool = Research(
+        from subagents.research_agent import ResearchAgent
+        research_tool = ResearchAgent(
             llm_config=self.llm_config.get("research")
         )
 
-        graph = StateGraph(SupervisorState)
+        graph = StateGraph(ResearchLeadAgentState)
 
         graph.add_node("supervisor", LLMCall(llm_config=self.llm_config.get("supervisor").get("supervisor_agent"), tools=tools))
         graph.add_node("tool_node", ToolNode(tools=tools, research_tool=research_tool))
