@@ -14,8 +14,8 @@ from langgraph.graph import StateGraph, START, END, MessagesState
 from langgraph.types import Command
 from sys import path
 path.append("../src/")
+from prompts import lead_researcher_prompt, compress_research_system_prompt, compress_research_human_message
 
-from prompts import lead_researcher_prompt
 from tools.supervise import (
     ConductResearch, 
     ResearchComplete
@@ -44,6 +44,8 @@ class ResearchLeadAgentState(MessagesState):
     research_iterations: int = 0
     # Raw unprocessed research notes collected from sub-agent research
     raw_notes: Annotated[list[str], operator.add] = []
+    # research summary
+    research_summary: str
 
 
 def get_notes_from_tool_calls(messages: list[BaseMessage]) -> list[str]:
@@ -136,7 +138,7 @@ class ToolNode:
         # This prevents infinite loops and controls research depth per topic
         self.max_researcher_iterations = 6 # Calls to think_tool + ConductResearch
 
-    async def __call__(self, state: ResearchLeadAgentState) -> Command[Literal["supervisor", END]]:
+    async def __call__(self, state: ResearchLeadAgentState) -> Command[Literal["supervisor", "summarizer"]]:
         """Execute supervisor decisions - either conduct research or end the process.
         
         Handles:
@@ -171,7 +173,7 @@ class ToolNode:
         
         if exceeded_iterations or no_tool_calls or research_complete:
             should_end = True
-            next_step = END
+            next_step = "summarizer"
         
         else:
             # Execute ALL tool calls before deciding next step
@@ -237,7 +239,7 @@ class ToolNode:
             except Exception as e:
                 print(f"Error in supervisor tools: {e}")
                 should_end = True
-                next_step = END
+                next_step = "summarizer"
         
         # Single return point with appropriate state updates
         if should_end:
@@ -245,7 +247,7 @@ class ToolNode:
                 goto=next_step,
                 update={
                     "notes": get_notes_from_tool_calls(messages),
-                    "research_brief": state.get("research_brief", "")
+                    "messages": tool_messages
                 }
             )
         else:
@@ -256,6 +258,32 @@ class ToolNode:
                     "raw_notes": all_raw_notes
                 }
             )
+
+
+class SummarizeResearch:
+    def __init__(self, llm_config):
+        self._llm_config = llm_config
+        model = init_chat_model(
+            model=self._llm_config.get("model_name"), 
+            temperature=self._llm_config.get("temperature")
+        )
+        self.llm = model
+
+    async def __call__(self, state: ResearchLeadAgentState):
+        """Compress research findings into a concise summary.
+        
+        Takes all the research messages and tool outputs and creates
+        a compressed summary suitable for the supervisor's decision-making.
+        """
+        
+        system_message = compress_research_system_prompt.format(date=get_today_str())
+        messages = [SystemMessage(content=system_message)] + state.get("notes", []) + [HumanMessage(content=compress_research_human_message)]
+        response = await self.llm.ainvoke(messages)
+                
+        return {
+            "research_summary": str(response.content),
+            "messages": [response]
+        }
 
 
 class ResearchLeadAgent:
@@ -281,8 +309,10 @@ class ResearchLeadAgent:
 
         graph.add_node("supervisor", LLMCall(llm_config=self.llm_config.get("supervisor").get("supervisor_agent"), tools=tools))
         graph.add_node("tool_node", ToolNode(tools=tools, research_tool=research_tool))
-
+        graph.add_node("summarizer", SummarizeResearch(llm_config=self.llm_config.get("research").get("summarize_research")))
+        
         graph.add_edge(START, "supervisor")
+        graph.add_edge("summarizer", END)
 
         self.graph = graph
 
