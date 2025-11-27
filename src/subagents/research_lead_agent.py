@@ -318,6 +318,9 @@ class ResearchLeadAgent:
 
     def _compile_graph(self, compile_config):
         self.compiled_graph = self.graph.compile(**compile_config)
+
+    async def __call__(self, input, config):
+        return await self.ainvoke(input, config)
     
     async def ainvoke(self, input, config):
         return await self.compiled_graph.ainvoke(input, config=config)
