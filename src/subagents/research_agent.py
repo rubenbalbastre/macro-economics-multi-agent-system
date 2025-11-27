@@ -170,3 +170,7 @@ class ResearchAgent:
     
     async def ainvoke(self, input, config = {}):
         return await self.compiled_graph.ainvoke(input, config=config)
+    
+    async def __call__(self, input, config):
+        return await self.ainvoke(input, config)
+    

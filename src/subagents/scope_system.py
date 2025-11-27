@@ -17,11 +17,11 @@ class ScopeSystemState(MessagesState):
 
 
 # structured output schemas
-class ResearchQuestion(BaseModel):
+class ResearchBriefOutput(BaseModel):
     title: str
 
 
-class ResearchTopicAnalysis(BaseModel):
+class TopicClarifierOutput(BaseModel):
     is_topic_clarified: bool = Field(
         description="Whether the user needs to be asked for a clarification on the topic."
     )
@@ -38,7 +38,7 @@ class TopicClarifier:
             model=self._llm_config.get("model_name"), 
             temperature=self._llm_config.get("temperature")
         )
-        self.llm = model.with_structured_output(ResearchTopicAnalysis)
+        self.llm = model.with_structured_output(TopicClarifierOutput)
 
     async def __call__(self, state):
         response = await self.llm.ainvoke(
@@ -63,7 +63,7 @@ class ResearchBrief:
             model=self._llm_config.get("model_name"), 
             temperature=self._llm_config.get("temperature")
         )
-        self.llm = model.with_structured_output(ResearchQuestion)
+        self.llm = model.with_structured_output(ResearchBriefOutput)
 
     async def __call__(self, state):
         response = await self.llm.ainvoke([
@@ -96,11 +96,11 @@ class ScopeSystem:
     def _build_graph(self):
 
         graph = StateGraph(ScopeSystemState)
-        graph.add_node("analyze_research_topic", TopicClarifier(llm_config=self.llm_config.get("topic_clarification")))
+        graph.add_node("topic_clarification", TopicClarifier(llm_config=self.llm_config.get("topic_clarification")))
         graph.add_node("write_research_brief", ResearchBrief(llm_config=self.llm_config.get("research_brief")))
 
-        graph.add_edge(START, "analyze_research_topic")
-        graph.add_conditional_edges("analyze_research_topic", check_clarity, {"write_research_brief": "write_research_brief", END: END})
+        graph.add_edge(START, "topic_clarification")
+        graph.add_conditional_edges("topic_clarification", check_clarity, {"write_research_brief": "write_research_brief", END: END})
         graph.add_edge("write_research_brief", END)
 
         self.graph = graph
@@ -110,3 +110,7 @@ class ScopeSystem:
     
     async def ainvoke(self, input, config):
         return await self.compiled_graph.ainvoke(input, config=config)
+
+    async def __call__(self, input, config):
+        return await self.ainvoke(input, config)
+    
