@@ -2,14 +2,17 @@
 
 ## 🧭 Purpose
 
-This repo contains a deep research multi agent LLM based system. When asked about a certain topic:
+This repository contains a multi-agent, LLM-based deep research system designed to track and analyze macro-economic topics over time.
 
-1. It does a first research to save the current state of the topic. 
-2. Based on it, it searches for future events which might change it and save them as list.
+When the user requests a topic, the system:
 
-The motivation behind is that current deep research systems are one-shot tools which process large amounts of information. However, when deploying these systems there is a need to only partial re-run them when certain topics occur. This work proposes a simple 2 stages solution to be used as a base.
+1. **Performs an initial deep-research pass** to establish and store the current state of the topic.
 
-This architecture is motivated due to the requirement of knowing past trends and events to be able to answer properly in macro-economic topics. However, this might apply to many different topics.
+2. **Identifies future events** that may impact that topic and stores them as a structured list.
+
+Most existing deep-research tools operate as one-shot pipelines. In real deployments, however, you often want to **partially rerun research only when relevant future events occur**.
+
+This project proposes a simple two-stage architecture that makes this possible, starting with macroeconomics but extendable to any domain where **past trends and upcoming events matter**.
 
 It is mainly inspired by the [Deep Research](https://github.com/langchain-ai/open_deep_research) and [Deep Agents](https://github.com/langchain-ai/deepagents) projects of LangChain.
 
@@ -109,9 +112,8 @@ The framework used to develop this project was LangGraph due to the flexibility 
 
 #### Workflows/Agents as Objects
  
-To facilitate configuration of different agents and tools, a yaml config file is provided. To work on top of that, a object oriented style is followed to implement Workflows and Agent. Classes are created to hold logics and instances are specific LLM configurations of those classes.
+Agents and workflows are implemented in an object-oriented style. Configuration (e.g., LLM settings) is stored in YAML files, making it easy to reuse logic while varying model parameters.
 
-LLMs configuration is defined in a yaml file similar to this. It contains the model name and the temperature. Note that this could extend to other parameters but it was not required to the purpose of this repo.
 
 ```yaml
 "research":
