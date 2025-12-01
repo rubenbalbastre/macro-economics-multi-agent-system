@@ -132,6 +132,13 @@ LLMs configuration is defined in a yaml file similar to this. It contains the mo
   "supervisor_agent":
     "model_name": "gpt-4o-mini"
     "temperature": 0
+"planner":
+  "current_state":
+    "model_name": "gpt-4o-mini"
+    "temperature": 0
+  "future_events":
+    "model_name": "gpt-4o-mini"
+    "temperature": 0
 ```
 
 #### Tavily Search as Search Engine
