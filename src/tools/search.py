@@ -11,7 +11,7 @@ from langchain_core.messages import HumanMessage
 from langchain.chat_models import init_chat_model
 
 tavily_client = TavilyClient()
-summarization_model = init_chat_model(model="gpt-4o-mini", max_tokens=16384) # TODO: to be in config in yaml using wrapping classes around node and graphs
+summarization_model = init_chat_model(model="gpt-4.1") # TODO: to be in config in yaml using wrapping classes around node and graphs
 
 
 class Summary(BaseModel):
@@ -41,7 +41,7 @@ def tavily_search(
         [query],  # Convert single query to list for the internal function
         max_results=max_results,
         topic=topic,
-        include_raw_content=True,
+        include_raw_content=False,
     )
 
     # Deduplicate results by URL to avoid processing duplicate content

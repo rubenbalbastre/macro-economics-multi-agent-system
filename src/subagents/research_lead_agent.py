@@ -138,7 +138,7 @@ class ToolNode:
         # This prevents infinite loops and controls research depth per topic
         self.max_researcher_iterations = 6 # Calls to think_tool + ConductResearch
 
-    async def __call__(self, state: ResearchLeadAgentState) -> Command[Literal["supervisor", "summarizer"]]:
+    async def __call__(self, state: ResearchLeadAgentState, config) -> Command[Literal["supervisor", "summarizer"]]:
         """Execute supervisor decisions - either conduct research or end the process.
         
         Handles:
@@ -204,12 +204,12 @@ class ToolNode:
                 if conduct_research_calls:
                     # Launch parallel research agents
                     coros = [
-                        self.research_tool.ainvoke({
+                        self.research_tool.ainvoke(input={
                             "messages": [
                                 HumanMessage(content=tool_call["args"]["research_topic"])
                             ],
                             "research_topic": tool_call["args"]["research_topic"]
-                        }) 
+                        }, config=config) 
                         for tool_call in conduct_research_calls
                     ]
 
@@ -319,8 +319,8 @@ class ResearchLeadAgent:
     def _compile_graph(self, compile_config):
         self.compiled_graph = self.graph.compile(**compile_config)
 
-    async def __call__(self, input, config):
+    async def __call__(self, input, config=None):
         return await self.ainvoke(input, config)
     
-    async def ainvoke(self, input, config):
+    async def ainvoke(self, input, config=None):
         return await self.compiled_graph.ainvoke(input, config=config)

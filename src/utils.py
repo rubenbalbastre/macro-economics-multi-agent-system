@@ -79,3 +79,62 @@ def show_prompt(prompt_text: str, title: str = "Prompt", border_style: str = "bl
         border_style=border_style,
         padding=(1, 2)
     ))
+
+
+from collections.abc import Sequence
+from langchain_core.messages import BaseMessage, HumanMessage, ChatMessage, FunctionMessage, AIMessage, ToolMessage, SystemMessage
+
+
+def get_buffer_string(
+    messages: Sequence[BaseMessage], human_prefix: str = "Human", ai_prefix: str = "AI"
+) -> str:
+    r"""Convert a sequence of messages to strings and concatenate them into one string.
+
+    Args:
+        messages: Messages to be converted to strings.
+        human_prefix: The prefix to prepend to contents of `HumanMessage`s.
+        ai_prefix: The prefix to prepend to contents of `AIMessage`.
+
+    Returns:
+        A single string concatenation of all input messages.
+
+    Raises:
+        ValueError: If an unsupported message type is encountered.
+
+    Example:
+        ```python
+        from langchain_core import AIMessage, HumanMessage
+
+        messages = [
+            HumanMessage(content="Hi, how are you?"),
+            AIMessage(content="Good, how are you?"),
+        ]
+        get_buffer_string(messages)
+        # -> "Human: Hi, how are you?\nAI: Good, how are you?"
+        ```
+    """
+    string_messages = []
+    for m in messages:
+        if isinstance(m, HumanMessage):
+            role = human_prefix
+        elif isinstance(m, AIMessage):
+            role = ai_prefix
+        elif isinstance(m, SystemMessage):
+            role = "System"
+        elif isinstance(m, FunctionMessage):
+            role = "Function"
+        elif isinstance(m, ToolMessage):
+            role = "Tool"
+        elif isinstance(m, ChatMessage):
+            role = m.role
+        else:
+            msg = f"Got unsupported message type: {m}"
+            raise ValueError(msg)  # noqa: TRY004
+        message = f"{role}: {m.text}"
+        if isinstance(m, AIMessage) and hasattr(m, "tool_calls"):
+            message += f"{m.tool_calls}"
+        elif isinstance(m, AIMessage) and "tool_calls" in m.additional_kwargs:
+            message += f"{m.additional_kwargs['function_call']}"
+        string_messages.append(message)
+
+    return "\n".join(string_messages)
