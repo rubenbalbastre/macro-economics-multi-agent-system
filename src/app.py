@@ -160,7 +160,7 @@ class ToolNode:
             ]
 
             if any_complete_research:
-                tool_results = [{'content': "Research Completed" for m in any_complete_research}]
+                tool_results = [{'content': "Research Completed"} for m in any_complete_research]
                 tool_messages.extend([
                         ToolMessage(
                             content=result.get("content"),
