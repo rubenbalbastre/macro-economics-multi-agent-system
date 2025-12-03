@@ -1,8 +1,8 @@
-# Macro Economics Multi-Agent System
+# Deep Research Multi-Agent System
 
 ## 🧭 Purpose
 
-This repository contains a multi-agent, LLM-based deep research system designed to track and analyze macro-economic topics over time.
+This repository contains a multi-agent, LLM-based deep research system designed to track and analyze evolving topics over time.
 
 When the user requests a topic, the system:
 
@@ -145,7 +145,7 @@ Agents and workflows are implemented in an object-oriented style. Configuration 
 
 #### Tavily Search as Search Engine
 
-The search engine used is tavily search. This is motivated by two reasons:
+The search engine used is tavily search. This is motivated by three reasons:
 
 1. The project does not aim to be very complex to execute but just be a proof of concept. Then, a good idea is to try to reduce the number of items and reuse existing tools.
 
@@ -160,7 +160,8 @@ The **Think tool** is used to add an explicit reflection step to each agent’s 
 
 ## Future Potential Developments
 
-* A system which triggers automatically a new research run when a future events occurs.
+* A program to automatically trigger new research runs when a future events is expected to occur.
+* Store current state and future events in a RAG system so the agents can easily access information.
 
 
 ## References:
@@ -168,6 +169,5 @@ The **Think tool** is used to add an explicit reflection step to each agent’s 
 
 * [Deep Research](https://github.com/langchain-ai/open_deep_research)
 * [Deep Agents](https://github.com/langchain-ai/deepagents)
-* [AlphaAgents paper](https://arxiv.org/abs/2508.11152)
 * [Antrophic "think" tool](https://www.anthropic.com/engineering/claude-think-tool)
 * [Anthropic Multi-Agent Research System](https://www.anthropic.com/engineering/multi-agent-research-system)
