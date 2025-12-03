@@ -164,8 +164,14 @@ The **Think tool** is used to add an explicit reflection step to each agent’s 
 Agents are provided a tool named "ResearchComplete" to indicate that the research should be. However, sometimes it is required to force the loop finish to avoid non-desired costs. Some tricks are used inside the graph states to finish loops.
 
 
+## Evaluation & Metrics
+
+Due to the experimental nature of this work and the limited resources, computation of evaluation metrics are not included in any LLM call.
+
+
 ## Future Potential Developments
 
+* A set of metrics to evaluate the system performance.
 * A program to automatically trigger new research runs when a future events is expected to occur.
 * Store current state and future events in a RAG system so the agents can easily access information.
 
